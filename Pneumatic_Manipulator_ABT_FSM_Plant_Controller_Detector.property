@@ -1,0 +1,16 @@
+property { 
+
+	define {
+		alarm = lc_A.alarm;
+	}
+	Assertion{
+		Safety_Alarm: !(alarm);
+	}
+	/*
+	CTL{
+	Safety_1: E(ap U bp);
+	Safety_2: E(am U bp);
+		}
+	*/	
+}
+

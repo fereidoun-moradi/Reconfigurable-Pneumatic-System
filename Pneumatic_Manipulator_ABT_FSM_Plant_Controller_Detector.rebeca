@@ -1,0 +1,108 @@
+//system’s work cycle: bp, b1, bm, b0, bp, b1, bm, b0, am, a0 
+//intitial state: a0, b0
+reactiveclass Cylinder_A(4){
+	knownrebecs{LocalControllerA lc_A;}
+	statevars{}
+	Cylinder_A(){}
+	msgsrv ap() {delay(1);self.a1();}
+	msgsrv a1() {lc_A.a1();}
+	msgsrv am() {delay(1);self.a0();}
+	msgsrv a0() {lc_A.a0();}
+}	
+reactiveclass Cylinder_B(4){
+	knownrebecs{LocalControllerB lc_B;}
+	statevars{}
+	Cylinder_B(){}
+	msgsrv bp() {delay(1);self.b1();}
+	msgsrv b1() {lc_B.b1();}
+	msgsrv bm() {delay(1);self.b0();}
+	msgsrv b0() {lc_B.b0();}
+}
+
+reactiveclass LocalControllerA(4){
+	knownrebecs{Cylinder_A Cyl_a;LocalControllerB lc_B;}
+	statevars{boolean [4]s; boolean turn,alarm;} // expected inputs order s = (b0,a1,b0,a0)* 
+	LocalControllerA(){
+		self.b0() after(0); //Event-Insetion *The integrated detector will not recognize this injection before violation (Bad-Event).*
+		s[0] = true; s[1] = false; s[2] = false; s[3] = false; // initial state 
+		turn = true;
+		alarm = false;
+	} 
+	msgsrv a0() {self.d(3);}
+	msgsrv a1() {self.d(1);}
+	msgsrv b0() {if(turn){ self.d(0); turn = false;} 
+					else {self.d(2); turn = true;}
+	}
+	
+	msgsrv d(int c) { //detector
+			if(c == 0 && s[0] == true){Cyl_a.ap(); 			s[0] = false; s[1] = true; s[2] = false; s[3] = false;}
+			else if(c == 1 && s[1] == true){lc_B.a1();		s[0] = false; s[1] = false; s[2] = true; s[3] = false;}
+			else if(c == 2 && s[2] == true){Cyl_a.am();		s[0] = false; s[1] = false; s[2] = false; s[3] = true;}
+			else if(c == 3 && s[3] == true){lc_B.a0();		s[0] = true; s[1] = false; s[2] = false; s[3] = false;}
+			else {alarm = true;}
+	}
+}
+
+reactiveclass LocalControllerB(4){
+	knownrebecs{Cylinder_B Cyl_b;LocalControllerA lc_A;}
+	statevars{}
+	LocalControllerB(){self.st();}
+	msgsrv st() {Cyl_b.bp();}
+	msgsrv b1() {Cyl_b.bm();}
+	msgsrv b0() {lc_A.b0();}
+	
+	msgsrv a0() {Cyl_b.bp();}	
+	msgsrv a1() {Cyl_b.bp();}
+}
+
+main{
+	Cylinder_A cylinder_A(lc_A):();
+	Cylinder_B cylinder_B(lc_B):();
+	LocalControllerA lc_A(cylinder_A, lc_B):();
+	LocalControllerB lc_B(cylinder_B, lc_A):();
+}
+
+//msgsrv st() {Cyl_b.bp();}
+	/*
+	msgsrv st() {
+		boolean none_deterministic = ?(true,false);
+		if(none_deterministic) {Cyl_b.bp();
+				} else {lc_A.b0(); //Event-Insertion	
+			}
+	}
+	*/
+	//msgsrv b1() {Cyl_b.bm();}
+	//Event-Insertion lc_A.b0();
+	/* 
+	msgsrv b1() {
+		boolean none_deterministic = ?(true,false);
+			if(none_deterministic) {Cyl_b.bm();
+				} else {lc_A.b0(); //Event-Insertion	
+			}
+	}
+	*/
+	//msgsrv b0() {lc_A.b0();}
+	/*	  
+	msgsrv b0() {
+		boolean none_deterministic = ?(true,false);
+			if(none_deterministic) {lc_A.b0();
+				} else {lc_A.b0(); //Event-Insertion	
+			}
+	}
+	*/
+	//msgsrv a0() {Cyl_b.bp();}
+	/*	    
+	msgsrv a0() {
+		boolean none_deterministic = ?(true,false);
+			if(none_deterministic) {Cyl_b.bp();
+				} else {lc_A.b0(); //Event-Insertion	
+			}
+	}
+	*/	
+	//msgsrv a1() {Cyl_b.bp();}
+	
+	/*
+	Detection fails
+	self.b0() after(0);
+	self.a1() after(5);
+	*/
