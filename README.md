@@ -3,6 +3,9 @@
 The Timed Rebeca model and written safety properties.
 The Python codes augment attacks in the Timed Rebeca model. The attacks include compromised version of the components and false data injections.
 
+https://github.com/fereidoun-moradi/Reconfigurable-Pneumatic-System/blob/main/RPS_V2024_attackmodel.rebeca 
+https://github.com/fereidoun-moradi/Reconfigurable-Pneumatic-System/blob/main/RPS_V2024_attackmodel.property
+
 
 
 The system has two cylinders, CylinderA and CylinderB. Each cylinder is controlled by a dedicated controller to regulate the movement in either left-right or up-down directions. The timing of the movement for cylinders can differ based on the direction of the
