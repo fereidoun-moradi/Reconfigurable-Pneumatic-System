@@ -5,9 +5,8 @@ The Python codes augment attacks in the Timed Rebeca model. The attacks include 
 
 
 <body>
-    <p><a href="[https://github.com/fereidoun-moradi/SWaT-Rebeca-Model/blob/master/SWaT_Time_V1.rebeca](https://github.com/fereidoun-moradi/Reconfigurable-Pneumatic-System/blob/main/RPS_V2024_attackmodel.rebeca)">Timed Rebeca model augmented with attacks</a>.</p>
-    <p><a href=" 
-https://github.com/fereidoun-moradi/Reconfigurable-Pneumatic-System/blob/main/RPS_V2024_attackmodel.property">Properties</a>.</p>   
+    <p><a href="https://github.com/fereidoun-moradi/Reconfigurable-Pneumatic-System/blob/main/RPS_V2024_attackmodel.rebeca">Timed Rebeca model augmented with attacks</a>.</p>
+    <p><a href="https://github.com/fereidoun-moradi/Reconfigurable-Pneumatic-System/blob/main/RPS_V2024_attackmodel.property">Properties</a>.</p>   
 </body>
 
 
