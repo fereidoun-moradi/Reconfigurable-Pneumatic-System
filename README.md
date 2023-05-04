@@ -9,3 +9,5 @@ The system has two cylinders, CylinderA and CylinderB. Each cylinder is controll
 movement. The controllers are responsible for coordinating the movements in the correct sequence and timing that involve pick-and-place operations.
 The motion plan is moving the cylinders from the initial position (location X) to the target position (location Y), and then moving back to the initial position. In this case, each movement takes 2 units of time. The desired sequence of movements of the cylinders is as follows: (1) CylinderB moves
 down, (2) CylinderB moves up, (3) CylinderA moves right, (4) CylinderB moves down and (5) then up, (6) CylinderA moves left.
+
+[fig3.pdf](https://github.com/fereidoun-moradi/Reconfigurable-Pneumatic-System/files/11395744/fig3.pdf)
