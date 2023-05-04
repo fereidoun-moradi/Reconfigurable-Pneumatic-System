@@ -1,0 +1,29 @@
+property {
+	define {
+		
+		locAa = cylA.loc == 0;
+		locAb = cylA.loc == 2;
+		locAbstuck = cylA.loc == 3;
+		locAastuck = cylA.loc == -1;
+
+		motionR = cylA.motion == 1;
+		motionL = cylA.motion == -1;
+
+		locBa = cylB.loc == 0;
+		locBb = cylB.loc == -2;
+		locBbstuck = cylB.loc == -3;
+		locBastuck = cylB.loc == 1;
+
+		motionU = cylB.motion == 1;
+		motionD = cylB.motion == -1;
+	
+	}
+	Assertion {
+		safety_prop1: !((motionR && locBb) || (motionL && locBb));
+		safety_prop2: !((motionR && motionU) || (motionL && motionD));
+		safety_prop3: !((motionL && motionU) || (motionR && motionD));
+		safety_prop4: !(locAastuck ||locAbstuck);
+		safety_prop5: !(locBastuck ||locBbstuck);
+	}
+	
+}

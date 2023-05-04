@@ -1,0 +1,251 @@
+//desirable behavior: cylinderB_down, cylinderB_up, cylinderA_right, cylinderB_down, cylinderB_up and cylinderA_left
+
+//attack on sensorA
+env boolean sAComp = false; 
+env int sAComp_time = 0; // 0,2,4,6,...,28
+env int sAmalMsg = 0; //0,1,2 
+
+//attack on sensorB
+env boolean sBComp = false;
+env int sBComp_time = 12; // 0,2,4,6,...,28
+env int sBmalMsg = 0; //0,-1,-2
+
+//attack on cylinderA
+env boolean cAComp = false;
+env int cAComp_time = 28; // 0,2,4,6,...,28
+env int cAmalMsg = 1; //-1,1
+
+//attack on cylinderB
+env boolean cBComp = false;
+env int cBComp_time = 0; // 0,2,4,6,...,28
+env int cBmalMsg = 0; //-1,1
+
+//attack on channels
+env boolean inj_attk = false;
+env int attTime = 6; // 0,2,4,6,...28
+env int malMsg = 0; //(if env int chl == 1) --> is 0 (if env int chl == 2) --> is 0 , 2 
+env int chl = 2; //1,2
+
+//cylinders end locations
+env int cylinderAEndloc = 2;
+env int cylinderBEndloc = -2;
+
+reactiveclass ControllerA(5){
+	knownrebecs{
+		CylinderA cylA; 
+		ControllerB cntlB; 
+	}
+	statevars{boolean locBisUP, locAisLeft;}
+	ControllerA(){
+		locBisUP = false;
+		locAisLeft = true; 
+	}
+	msgsrv getsense(int loc) { //locBisUP:true means that CylinderB is up
+		if(locBisUP) {
+			if(locAisLeft) {
+				if(loc == cylinderAEndloc) {
+					cntlB.getctl(loc);
+					locAisLeft = false;
+					locBisUP = false;
+				} else {
+					cylA.actuate(1);
+				}
+			} else if (!locAisLeft) {
+				if(loc == 0) {
+					cntlB.getctl(loc);
+					locAisLeft = true;
+					locBisUP = false;
+				} else {
+					cylA.actuate(-1);
+				}
+			}
+		}
+	} 
+	msgsrv getctl(int loc){
+		if (loc == 0) {
+			locBisUP = true;
+		}
+	}
+}
+
+reactiveclass ControllerB(5){
+	knownrebecs{
+		CylinderB cylB; 
+		ControllerA cntlA; 
+	}
+	statevars{boolean locA, locBisUP;}
+	ControllerB(){
+		locA = true; 
+		locBisUP = true; 
+	}
+	msgsrv getsense(int loc) {
+		if(locA) {
+			if(locBisUP) {
+				if(loc == cylinderBEndloc) {
+					self.selfctl();
+					locBisUP = false;
+				} else {
+					cylB.actuate(-1);
+				}
+			} else if (!locBisUP) {
+				if(loc == 0) {
+					cntlA.getctl(loc);
+					locA = false;
+					locBisUP = false;
+				} else {
+					cylB.actuate(1);
+				}
+			}
+		}
+	} 
+	msgsrv getctl(int loc){
+		if (loc == 0 || loc == cylinderAEndloc) { 
+			locA = true;
+			locBisUP = true;
+		}
+	}
+	
+	msgsrv selfctl() {
+		locA = true; 
+	}
+}
+
+
+reactiveclass SensorA(5){	
+	knownrebecs{
+            ControllerA ControllerA;
+	}
+	SensorA(boolean compromised, int compTime, int msg){
+		if (compromised) {
+			self.getloc(msg) after(compTime);
+		}
+	}
+	msgsrv getloc(int loc) {
+           ControllerA.getsense(loc);
+   }
+}
+
+
+reactiveclass SensorB(5){	
+	knownrebecs{
+            ControllerB ControllerB;
+	}
+	SensorB(boolean compromised, int compTime, int msg){
+		if (compromised) {
+			self.getloc(msg) after(compTime);
+		}
+	}
+	msgsrv getloc(int loc) {
+           ControllerB.getsense(loc);
+   }
+}
+
+
+
+reactiveclass CylinderA(5){		
+	knownrebecs{SensorA SensorA;}
+	statevars{ int loc, motion;}
+	CylinderA(boolean compromised, int compTime, int msg){
+		loc = 0;
+		motion = 0;
+		self.status();
+		if (compromised) {
+			self.actuate(msg) after(compTime);
+		}
+	}
+	msgsrv status() { 
+            	loc = loc + motion; // left to right on x-axis
+            	if(loc == 0 || loc == cylinderAEndloc){
+            		SensorA.getloc(loc); // sensor only reports the start and the end locations
+            		motion = 0; 
+            	} 
+            	self.status() after(2); 
+	}
+	msgsrv actuate(int rate) { 
+		motion = rate;
+	}	
+}
+
+reactiveclass CylinderB(5){		
+	knownrebecs{SensorB SensorB;}
+	statevars{ int loc, motion;}
+	CylinderB(boolean compromised, int compTime, int msg){
+		loc = 0;
+		motion = 0;
+		self.status();
+		if (compromised) {
+			self.actuate(msg) after(compTime);
+		}
+	}
+	msgsrv status() { 
+            	loc = loc + motion; // up to down on y-axis
+            	if(loc == 0 || loc == cylinderBEndloc){
+            		SensorB.getloc(loc); // sensor only reports the start and the end locations
+            		motion = 0; 
+            	}
+            	self.status() after(2); 
+	}
+	msgsrv actuate(int rate) { 
+		motion = rate;
+	}
+	
+}
+
+
+
+
+
+//--------------------------Attacker------------------------------------
+// It injects fake messages in the channels between controllers
+reactiveclass Attacker(3){
+	knownrebecs{
+		ControllerA	cntlA;
+		ControllerB	cntlB;
+	}
+	Attacker(boolean inj, int channel, int msg, int attktime) {
+	 if(inj){	
+		 	if (channel == 1) { 
+		 		self.channelcntlBcntlA(msg, attktime);
+		 	}else if (channel == 2) { 
+		 		self.channelcntlAcntlB(msg, attktime);
+		 	}	
+		}
+	}
+	msgsrv channelcntlBcntlA(int msg, int attktime){	
+		cntlA.getctl(msg) after(attktime);	
+	}
+	msgsrv channelcntlAcntlB(int msg, int attktime){	
+		cntlB.getctl(msg) after(attktime);	
+	}
+}
+
+
+
+
+main{
+	CylinderA cylA(SensorA):(cAComp,cAComp_time,cAmalMsg);
+	CylinderB cylB(SensorB):(cBComp,cBComp_time,cBmalMsg);
+	Attacker attacker(ControllerA, ControllerB):(inj_attk, chl, malMsg, attTime); 	
+	ControllerA ControllerA(cylA, ControllerB):(); 
+	SensorA SensorA(ControllerA):(sAComp,sAComp_time,sAmalMsg);
+	
+	
+	ControllerB ControllerB(cylB, ControllerA):(); 
+	SensorB SensorB(ControllerB):(sBComp,sBComp_time,sBmalMsg);
+	
+	
+}
+
+//...............................attacker info...............................
+	/*
+	chl: is channel number, 		Channels
+		chl = 1 (channelcntlAcntlB),    cntlA -----> cntlB
+		chl = 2 (channelcntlBcntlA),    cntlB <----- cntlA
+		
+	malMsg for sensors: 
+		the value between (0, 1 or 2) and (0, -1 or -2)
+	attTime: 
+		is the value between (0,2,4,6,...,28)
+	malMsg for cylinder: 
+		the value between 1 (down/right) to -1 (left/up)
+	*/
