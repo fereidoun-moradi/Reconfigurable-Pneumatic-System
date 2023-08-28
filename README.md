@@ -18,3 +18,5 @@ The motion plan is moving the cylinders from the initial position (location X) t
 down, (2) CylinderB moves up, (3) CylinderA moves right, (4) CylinderB moves down and (5) then up, (6) CylinderA moves left.
 
 [fig3.pdf](https://github.com/fereidoun-moradi/Reconfigurable-Pneumatic-System/files/11395744/fig3.pdf)
+
+<img src="https://github.com/fereidoun-moradi/Reconfigurable-Pneumatic-System/files/11395744/fig3.pdf" alt="Reconfigurable-Pneumatic-System">
