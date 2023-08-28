@@ -19,4 +19,3 @@ down, (2) CylinderB moves up, (3) CylinderA moves right, (4) CylinderB moves dow
 
 [fig3.pdf](https://github.com/fereidoun-moradi/Reconfigurable-Pneumatic-System/files/11395744/fig3.pdf)
 
- [embed]https://github.com/fereidoun-moradi/Reconfigurable-Pneumatic-System/files/11395744/fig3.pdf[/embed] 
